@@ -19,7 +19,12 @@ fun ImageView(image: Image) {
         image.shapes.forEach { shape->
             when(shape) {
                 is Rect -> {
-                    drawRect(Color.Red, topLeft = Offset(shape.x, shape.y), size = Size(shape.dx, shape.dy))
+
+                    val color = shape.color.let { col->
+                        Color(col.red, col.green, col.blue, col.alpha)
+                    }
+
+                    drawRect(color, topLeft = Offset(shape.x, shape.y), size = Size(shape.dx, shape.dy))
                 }
             }
         }
@@ -32,7 +37,7 @@ fun ImageView(image: Image) {
 @Preview
 fun ImageViewPreview() {
 
-    val image = Image().addShape(Rect(10.0f, 10.0f, 10.0f, 10.0f))
+    val image = Image().addShape(Rect(java.awt.Color.green, 10.0f, 10.0f, 10.0f, 10.0f))
     ImageView(image)
 
 }

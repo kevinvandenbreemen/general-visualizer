@@ -41,13 +41,10 @@ fun ImageView(image: Image, shapeCallback: ShapeCallback? = null) {
 
             detectTapGestures(onTap = {offset->
 
-                println("clickedPoint = (${offset.x}, ${offset.y})")
-
                 var shapeClicked = false
                 image.shapes.forEach { shape->
                     if(shape.contains(offset.x, offset.y)) {
                         shapeClicked = true
-                        println("image=$image")
                         callback.onShapeClicked(shape)
                     }
                 }
@@ -73,11 +70,6 @@ fun ImageView(image: Image, shapeCallback: ShapeCallback? = null) {
     }
 
 }
-
-/*
-clickedPoint = (5.0, 20.0)
-Shape Rect(color=java.awt.Color[r=128,g=128,b=128], x=0.0, y=10.0, dx=10.0, dy=10.0) clicked
- */
 
 @Composable
 fun AnimatedImageDisplay(imageToDisplay: StateFlow<Image>, shapeCallback: ShapeCallback? = null) {
@@ -125,7 +117,7 @@ private fun makeImage(idx: Int): Image {
         addShape(Rect(java.awt.Color.gray, idx.toFloat(), idx.toFloat(), 100f, 100f))
         val random = Random(System.nanoTime())
         for(i in 1 .. 100) {
-            //addShape(Rect(java.awt.Color.red, i*10f, random.nextFloat()*100, 10f, 10f))
+            addShape(Rect(java.awt.Color.red, i*10f, random.nextFloat()*100, 10f, 10f))
         }
     }
 }

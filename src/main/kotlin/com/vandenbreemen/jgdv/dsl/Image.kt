@@ -4,7 +4,9 @@ import java.awt.Color
 import java.util.Collections
 
 /**
- * Image to be displayed on the screen
+ * Image to be displayed on the screen.  Note that an Image's pixel space is exactly the same as the
+ * pixel space on the screen.  You will need to do mathematical transformations from your particular
+ * vector space to the image yourself
  */
 class Image {
 

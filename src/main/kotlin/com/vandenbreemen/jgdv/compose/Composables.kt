@@ -2,6 +2,7 @@ package com.vandenbreemen.jgdv.compose
 
 import androidx.compose.desktop.ui.tooling.preview.Preview
 import androidx.compose.foundation.Canvas
+import androidx.compose.foundation.gestures.detectTapGestures
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.runtime.Composable
@@ -10,11 +11,14 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.window.Window
 import com.vandenbreemen.jgdv.dsl.Image
 import com.vandenbreemen.jgdv.dsl.Rect
 import kotlinx.coroutines.flow.StateFlow
 import androidx.compose.ui.window.application
+import com.vandenbreemen.jgdv.dsl.Shape
+import com.vandenbreemen.jgdv.dsl.ShapeCallback
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
@@ -30,9 +34,31 @@ private fun color(col: java.awt.Color): Color {
 }
 
 @Composable
-fun ImageView(image: Image) {
+fun ImageView(image: Image, shapeCallback: ShapeCallback? = null) {
 
-    Canvas(Modifier.fillMaxSize()) {
+    Canvas(Modifier.fillMaxSize().pointerInput("PointerInput_${image.hashCode()}") {
+        shapeCallback?.let {callback->
+
+            detectTapGestures(onTap = {offset->
+
+                println("clickedPoint = (${offset.x}, ${offset.y})")
+
+                var shapeClicked = false
+                image.shapes.forEach { shape->
+                    if(shape.contains(offset.x, offset.y)) {
+                        shapeClicked = true
+                        println("image=$image")
+                        callback.onShapeClicked(shape)
+                    }
+                }
+
+                if(!shapeClicked) {
+                    callback.onPointClicked(offset.x, offset.y)
+                }
+            })
+        }
+
+    }) {
 
         drawRect(color(image.background), topLeft = Offset(0f,0f), size= Size(this.size.width, this.size.height))
 
@@ -48,18 +74,21 @@ fun ImageView(image: Image) {
 
 }
 
+/*
+clickedPoint = (5.0, 20.0)
+Shape Rect(color=java.awt.Color[r=128,g=128,b=128], x=0.0, y=10.0, dx=10.0, dy=10.0) clicked
+ */
+
 @Composable
-fun AnimatedImageDisplay(imageToDisplay: StateFlow<Image>) {
-    Column(Modifier.fillMaxSize()) {
-        imageToDisplay.collectAsState().value.let { image->
-            ImageView(image)
-        }
+fun AnimatedImageDisplay(imageToDisplay: StateFlow<Image>, shapeCallback: ShapeCallback? = null) {
+    imageToDisplay.collectAsState(Dispatchers.Main).value.let { image->
+        ImageView(image, shapeCallback)
     }
 }
 
 
 /**
- * Renders the given image each time it is updated
+ * Demo Application
  */
 fun main() = application{
 
@@ -68,26 +97,35 @@ fun main() = application{
 
     CoroutineScope(Dispatchers.Default).launch {
 
-        for(i in 0..500 step 10) {
-            flow.value = makeImage(i)
+        for(i in 0..4) {
             delay(100)
+
+            flow.emit(makeImage(i*100))
         }
 
     }
 
     Window(onCloseRequest = ::exitApplication, title = "Displaying animated grid of squares demo") {
 
-        AnimatedImageDisplay(flow)
+        AnimatedImageDisplay(flow, object: ShapeCallback {
+            override fun onShapeClicked(shape: Shape) {
+                println("Shape $shape clicked")
+            }
+
+            override fun onPointClicked(x: Float, y: Float) {
+                println("Point $x, $y clicked")
+            }
+        })
 
     }
 }
 
 private fun makeImage(idx: Int): Image {
     return Image().apply {
-        addShape(Rect(java.awt.Color.gray, idx.toFloat(), 10f, 10f, 10f))
+        addShape(Rect(java.awt.Color.gray, idx.toFloat(), idx.toFloat(), 100f, 100f))
         val random = Random(System.nanoTime())
         for(i in 1 .. 100) {
-            addShape(Rect(java.awt.Color.red, i*10f, random.nextFloat()*100, 10f, 10f))
+            //addShape(Rect(java.awt.Color.red, i*10f, random.nextFloat()*100, 10f, 10f))
         }
     }
 }

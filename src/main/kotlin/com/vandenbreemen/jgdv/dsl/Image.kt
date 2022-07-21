@@ -25,4 +25,19 @@ class Image {
         this.backgroundColor = color
     }
 
+    override fun toString(): String {
+        return "Image: [$shapes]"
+    }
+
+    override fun hashCode(): Int {
+        return toString().hashCode()
+    }
+
+    override fun equals(other: Any?): Boolean {
+
+        return (other as? Image)?.let {
+            other._shapes == _shapes && this.backgroundColor == other.backgroundColor
+        } ?: false
+    }
+
 }

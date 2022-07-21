@@ -11,20 +11,24 @@ import androidx.compose.ui.graphics.Color
 import com.vandenbreemen.jgdv.dsl.Image
 import com.vandenbreemen.jgdv.dsl.Rect
 
+/**
+ * Convert the given AWT color to a compose color
+ */
+private fun color(col: java.awt.Color): Color {
+    return Color(col.red, col.green, col.blue, col.alpha)
+}
+
 @Composable
 fun ImageView(image: Image) {
 
     Canvas(Modifier.fillMaxSize()) {
 
+        drawRect(color(image.background), topLeft = Offset(0f,0f), size= Size(this.size.width, this.size.height))
+
         image.shapes.forEach { shape->
             when(shape) {
                 is Rect -> {
-
-                    val color = shape.color.let { col->
-                        Color(col.red, col.green, col.blue, col.alpha)
-                    }
-
-                    drawRect(color, topLeft = Offset(shape.x, shape.y), size = Size(shape.dx, shape.dy))
+                    drawRect(color(shape.color), topLeft = Offset(shape.x, shape.y), size = Size(shape.dx, shape.dy))
                 }
             }
         }
